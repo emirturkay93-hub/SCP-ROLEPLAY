@@ -1,0 +1,227 @@
+-- --- MERT SCRIPTS: SCP ROLEPLAY PREMIUM (v4.3 - FINAL KEY UPDATE) ---
+-- [OCEAN NEON EDITION]
+-- KEY: yoraq (EXPIRES IN EXACTLY 24H)
+-- UI: RAYFIELD UI LIBRARY
+-- DEVELOPER: SEITH
+
+local ENV = (getgenv and getgenv()) or _G or shared
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+local CoreGui = game:GetService("CoreGui")
+local LP = Players.LocalPlayer
+
+-- Cleanup Previous
+if ENV.MertSCPRoot then
+    pcall(function() ENV.MertSCPRoot.RenderConnection:Disconnect() end)
+    ENV.MertSCPRoot.Active = false
+    if ENV.MertSCPRoot.UI then pcall(function() ENV.MertSCPRoot.UI:Destroy() end) end
+    pcall(function()
+        for _, v in pairs(CoreGui:GetChildren()) do if v.Name:find("Mert") or v.Name:find("Rayfield") then v:Destroy() end end
+        for _, v in pairs(workspace:GetDescendants()) do if v.Name:find("MertSCP") then v:Destroy() end end
+    end)
+end
+
+-- --- LIGHTING STABILIZER ---
+local oL = { Ambient = Lighting.Ambient, OutdoorAmbient = Lighting.OutdoorAmbient, Brightness = Lighting.Brightness, ClockTime = Lighting.ClockTime, GlobalShadows = Lighting.GlobalShadows, FogEnd = Lighting.FogEnd }
+
+ENV.MertSCPRoot = {
+    Active = true,
+    Settings = {
+        SilentAim = false,
+        AimbotFOV = 150,
+        TeamCheck = true,
+        ESP = false,
+        ESPTeamColors = true,
+        ESPNames = false,
+        Fullbright = false,
+        ShowFOV = true,
+        HitboxExpander = false,
+        HitboxSize = 2
+    },
+    SilentAimTarget = nil,
+    Rayfield = nil,
+    FOVUI = nil
+}
+
+-- --- PREMIUM NEON INTRO ---
+local function PlayIntro(callback)
+    local introGui = Instance.new("ScreenGui", CoreGui); introGui.Name = "MertIntro_GUI"; introGui.IgnoreGuiInset = true
+    local mainFrame = Instance.new("Frame", introGui); mainFrame.Size = UDim2.fromScale(1, 1); mainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 15)
+    local textLabel = Instance.new("TextLabel", mainFrame)
+    textLabel.Size = UDim2.fromScale(1, 1); textLabel.BackgroundTransparency = 1; textLabel.Text = "MERT SCRIPTS"; textLabel.TextColor3 = Color3.fromRGB(0, 200, 255); textLabel.TextSize = 1; textLabel.Font = Enum.Font.LuckiestGuy; textLabel.TextTransparency = 1
+    local stroke = Instance.new("UIStroke", textLabel); stroke.Color = Color3.fromRGB(0, 150, 255); stroke.Thickness = 5; stroke.Transparency = 1
+    
+    task.spawn(function()
+        TweenService:Create(textLabel, TweenInfo.new(1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {TextSize = 90, TextTransparency = 0}):Play()
+        TweenService:Create(stroke, TweenInfo.new(1.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+        task.wait(2.0)
+        local outTween = TweenService:Create(mainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {BackgroundTransparency = 1})
+        TweenService:Create(textLabel, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {TextTransparency = 1}):Play()
+        TweenService:Create(stroke, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Transparency = 1}):Play()
+        outTween:Play(); outTween.Completed:Wait()
+        introGui:Destroy()
+        if callback then callback() end
+    end)
+end
+
+-- --- 24 HOUR KEY EXPIRATION SYSTEM ---
+local function ManageKeyExpiration()
+    local timestampFile = "Mert_Timestamp.txt"
+    local rayfieldKeyFile = "MertScripts/MertSCP_Key.txt"
+    local currentTime = os.time()
+    
+    if isfile and isfile(timestampFile) then
+        local savedTime = tonumber(readfile(timestampFile))
+        if savedTime and (currentTime - savedTime) >= 86400 then 
+            delfile(timestampFile)
+            if isfile(rayfieldKeyFile) then delfile(rayfieldKeyFile) end
+        end
+    end
+end
+
+-- --- UI SETUP ---
+local function InitUI()
+    ManageKeyExpiration()
+    
+    local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+    ENV.MertSCPRoot.Rayfield = Rayfield
+    
+    local Window = Rayfield:CreateWindow({
+        Name = "MERT SCRIPTS | SCP ROLEPLAY",
+        LoadingTitle = "NEON Premium Edition",
+        LoadingSubtitle = "Developer: SEITH",
+        ConfigurationSaving = { Enabled = true, FolderName = "MertScripts", FileName = "SCPRP_Config" },
+        KeySystem = true,
+        KeySettings = {
+            Title = "MERT SCRIPTS | KEY SYSTEM",
+            Subtitle = "SCP Roleplay Premium",
+            Note = "Get the key from Discord | Developer: SEITH",
+            FileName = "MertSCP_Key", 
+            SaveKey = true, 
+            GrabKeyFromSite = false,
+            Key = {"yoraq"}
+        }
+    })
+
+    if isfile and not isfile("Mert_Timestamp.txt") then
+        writefile("Mert_Timestamp.txt", tostring(os.time()))
+    end
+
+    local Tabs = {
+        Combat = Window:CreateTab("Savaş", 4483362458),
+        Visuals = Window:CreateTab("Görsel", 4483362458),
+        World = Window:CreateTab("Dünya", 4483362458),
+        Settings = Window:CreateTab("Ayarlar", 4483362458)
+    }
+
+    Tabs.Combat:CreateToggle({ Name = "Silent Aim (Bullet Redir)", CurrentValue = false, Callback = function(v) ENV.MertSCPRoot.Settings.SilentAim = v end })
+    Tabs.Combat:CreateToggle({ Name = "Hard Team Check", CurrentValue = true, Callback = function(v) ENV.MertSCPRoot.Settings.TeamCheck = v end })
+    Tabs.Combat:CreateSlider({ Name = "Silent Range (FOV)", Range = {10, 800}, Increment = 1, Suffix = "FOV", CurrentValue = 150, Callback = function(v) ENV.MertSCPRoot.Settings.AimbotFOV = v end })
+    Tabs.Combat:CreateToggle({ Name = "Show FOV Circle", CurrentValue = true, Callback = function(v) ENV.MertSCPRoot.Settings.ShowFOV = v end })
+    Tabs.Combat:CreateSection("Hitbox Modifikasyonu")
+    Tabs.Combat:CreateToggle({ Name = "Invisible Hitbox", CurrentValue = false, Callback = function(v) ENV.MertSCPRoot.Settings.HitboxExpander = v end })
+    Tabs.Combat:CreateSlider({ Name = "Hitbox expansion", Range = {2, 15}, Increment = 1, Suffix = "Size", CurrentValue = 2, Callback = function(v) ENV.MertSCPRoot.Settings.HitboxSize = v end })
+
+    Tabs.Visuals:CreateToggle({ Name = "Billboard Box ESP", CurrentValue = false, Callback = function(v) ENV.MertSCPRoot.Settings.ESP = v end })
+    Tabs.Visuals:CreateToggle({ Name = "Show Name Tags", CurrentValue = false, Callback = function(v) ENV.MertSCPRoot.Settings.ESPNames = v end })
+    Tabs.Visuals:CreateToggle({ Name = "Team Colors", CurrentValue = true, Callback = function(v) ENV.MertSCPRoot.Settings.ESPTeamColors = v end })
+
+    Tabs.World:CreateToggle({ Name = "Ultimate Fullbright", CurrentValue = false, Callback = function(v) 
+        ENV.MertSCPRoot.Settings.Fullbright = v 
+        if not v then Lighting.Ambient = oL.Ambient; Lighting.OutdoorAmbient = oL.OutdoorAmbient; Lighting.Brightness = oL.Brightness; Lighting.ClockTime = oL.ClockTime; Lighting.GlobalShadows = oL.GlobalShadows; Lighting.FogEnd = oL.FogEnd end
+    end })
+
+    Tabs.Settings:CreateSection("Developer Information")
+    Tabs.Settings:CreateLabel("Developer: SEITH")
+
+    local fovGui = Instance.new("ScreenGui", CoreGui); fovGui.Name = "MertSCPFOV_GUI"; fovGui.IgnoreGuiInset = true
+    local circle = Instance.new("Frame", fovGui); circle.Name = "FOVCircle"; circle.BackgroundTransparency = 1; circle.Size = UDim2.fromOffset(300, 300); circle.Position = UDim2.new(0.5, -150, 0.5, -150)
+    local stroke = Instance.new("UIStroke", circle); stroke.Thickness = 1.5; stroke.Color = Color3.fromRGB(0, 180, 255); stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    local corner = Instance.new("UICorner", circle); corner.CornerRadius = UDim.new(1, 0)
+    ENV.MertSCPRoot.FOVUI = circle
+
+    ENV.MertSCPRoot.RenderConnection = RunService.RenderStepped:Connect(function()
+        if not ENV.MertSCPRoot.Active then return end
+        local s = ENV.MertSCPRoot.Settings
+        local camera = workspace.CurrentCamera; local center = camera.ViewportSize / 2; local closestDist = s.AimbotFOV; local target = nil
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LP and p.Character and p.Character:FindFirstChild("Head") and p.Character.Humanoid.Health > 0 then
+                if not (p.Team and LP.Team and p.Team == LP.Team and s.TeamCheck) then
+                    local h = p.Character.Head; local pos, onScreen = camera:WorldToViewportPoint(h.Position)
+                    if onScreen then
+                        local d = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+                        if d < closestDist then closestDist = d; target = h end
+                    end
+                end
+            end
+        end
+        ENV.MertSCPRoot.SilentAimTarget = target
+        if ENV.MertSCPRoot.FOVUI then
+            ENV.MertSCPRoot.FOVUI.Visible = s.ShowFOV
+            local d = s.AimbotFOV * 2; ENV.MertSCPRoot.FOVUI.Size = UDim2.fromOffset(d, d); ENV.MertSCPRoot.FOVUI.Position = UDim2.new(0.5, -s.AimbotFOV, 0.5, -s.AimbotFOV)
+        end
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = p.Character.HumanoidRootPart; local hum = p.Character:FindFirstChildOfClass("Humanoid")
+                local gui = p.Character:FindFirstChild("MertSCP_ESP")
+                if s.ESP and hum and hum.Health > 0 then
+                    if not (p.Team and LP.Team and p.Team == LP.Team and s.TeamCheck) then
+                        if not gui then
+                            gui = Instance.new("BillboardGui", p.Character); gui.Name = "MertSCP_ESP"; gui.AlwaysOnTop = true; gui.Size = UDim2.new(4, 0, 6, 0)
+                            local b = Instance.new("Frame", gui); b.Size = UDim2.new(1, 0, 1, 0); b.BackgroundTransparency = 1
+                            local bs = Instance.new("UIStroke", b); bs.Thickness = 2; bs.Color = Color3.fromRGB(0, 180, 255); bs.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                            local txt = Instance.new("TextLabel", gui); txt.Name = "NameLabel"; txt.Size = UDim2.new(1, 0, 0, 20); txt.Position = UDim2.new(0, 0, -0.4, 0); txt.BackgroundTransparency = 1; txt.TextColor3 = Color3.fromRGB(0, 220, 255); txt.TextSize = 14; txt.Font = Enum.Font.Code; txt.TextStrokeTransparency = 0
+                        end
+                        local col = (s.ESPTeamColors and p.TeamColor and p.TeamColor.Color) or Color3.fromRGB(0, 180, 255)
+                        gui.Adornee = hrp; gui.Frame.UIStroke.Color = col; gui.NameLabel.Visible = s.ESPNames; gui.NameLabel.Text = p.Name; gui.NameLabel.TextColor3 = col
+                    else if gui then gui:Destroy() end end
+                else if gui then gui:Destroy() end end
+                if not (p.Team and LP.Team and p.Team == LP.Team and s.TeamCheck) and hum and hum.Health > 0 then
+                    if s.HitboxExpander then hrp.Size = Vector3.new(s.HitboxSize, s.HitboxSize, s.HitboxSize); hrp.Transparency = 1; hrp.CanCollide = false
+                    else hrp.Size = Vector3.new(2, 2, 1); hrp.Transparency = 1; hrp.CanCollide = true end
+                end
+            end
+        end
+        if s.Fullbright and Lighting.FogEnd ~= 9e9 then
+            Lighting.Ambient = Color3.new(1,1,1); Lighting.OutdoorAmbient = Color3.new(1,1,1); Lighting.Brightness = 2; Lighting.ClockTime = 12; Lighting.GlobalShadows = false; Lighting.FogEnd = 9e9
+        end
+    end)
+
+    local function CheckStaff(p)
+        if not p or p == LP then return end
+        pcall(function()
+            if p:GetRankInGroup(4988012) >= 200 or (p.Team and (p.Team.Name:find("Admin") or p.Team.Name:find("Moderator"))) then
+                Rayfield:Notify({ Title = "YETKILI TESPIT EDILDI!", Content = p.Name .. " oyunda!", Duration = 10, Image = 4483362458 })
+            end
+        end)
+    end
+    for _, p in pairs(Players:GetPlayers()) do CheckStaff(p) end
+    Players.PlayerAdded:Connect(CheckStaff)
+end
+
+-- --- EXECUTION ---
+PlayIntro(function()
+    InitUI()
+end)
+
+-- SILENT AIM HOOK
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
+    local method = getnamecallmethod(); local args = {...}
+    if ENV.MertSCPRoot.Settings.SilentAim and not checkcaller() then
+        if method == "Raycast" or method == "FindPartOnRay" or method == "FindPartOnRayWithIgnoreList" then
+            local dir = method == "Raycast" and args[2] or args[1].Direction
+            if dir.Magnitude > 250 then
+                local target = ENV.MertSCPRoot.SilentAimTarget
+                if target then
+                    local origin = method == "Raycast" and args[1] or args[1].Origin
+                    if method == "Raycast" then args[2] = (target.Position - origin).Unit * 1000
+                    else args[1] = Ray.new(origin, (target.Position - origin).Unit * 1000) end
+                end
+            end
+        end
+    end
+    return oldNamecall(self, unpack(args))
+end))
